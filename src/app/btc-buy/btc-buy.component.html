@@ -1,0 +1,116 @@
+<form [formGroup]="form"
+      novalidate
+      fxLayout="column"
+      fxFlexFill
+      (ngSubmit)="onSubmit()">
+
+    <div fxLayout
+         fxFlexAlign="center">
+        <mat-card>
+
+            <mat-card-content fxLayout="column"
+                              fxLayoutGap="40px">
+                <div fxLayout="column"
+                     fxLayoutGap="15px">
+                    <div fxLayout="row"
+                         fxLayoutGap="15px">
+                        <div fxLayout
+                             fxFlexAlign="center"
+                             fxFlex>
+                            <p style="margin-bottom: 0"><strong>BTC Price</strong></p>
+                        </div>
+
+                        <div fxLayout
+                             fxFlex
+                             fxFlexAlign="center">
+                            <span [innerText]="(priceTicker$ | async)?.values?.buy"></span>
+                        </div>
+                    </div>
+                    <div fxLayout
+                         fxLayoutGap="15px">
+                        <div fxLayout
+                             fxFlex
+                             fxFlexAlign="center">
+                            <p style="margin-bottom: 0"><strong>Available funds</strong></p>
+                        </div>
+
+                        <div fxLayout
+                             fxFlex
+                             fxFlexAlign="center">
+                            <span [innerText]="(availableFunds$ | async)?.available_aud | currency"></span>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+                <div fxLayout="column"
+                     fxLayoutGap="15px">
+                    <div>
+                        <p>Enter the amount you want to buy</p>
+                    </div>
+                    <div fxLayout="column"
+                         fxLayoutGap="15px">
+                        <div fxLayout="column">
+                            <mat-form-field subscriptSizing="dynamic"
+                                            floatLabel="always">
+                                <mat-label>Amount</mat-label>
+                                <input matInput
+                                       type="number"
+                                       class=""
+                                       formControlName="amount"
+                                       placeholder="0">
+                                <span matTextPrefix>$&nbsp;</span>
+                                <span matTextSuffix>AUD</span>
+                            </mat-form-field>
+                            <app-validation [fGroup]="form"
+                                            [cName]="'amount'"></app-validation>
+                        </div>
+                        <div fxLayout="column">
+
+                            <!-- <app-validation [fGroup]="form"
+                                            [cName]="'amount'"></app-validation> -->
+                            <mat-form-field subscriptSizing="dynamic"
+                                            floatLabel="always">
+                                <mat-label>Estimate</mat-label>
+                                <input matInput
+                                       type="number"
+                                       class=""
+                                       formControlName="estimate"
+                                       [readonly]="true">
+                                <span matTextPrefix>&thickapprox;&nbsp;</span>
+                                <span matTextSuffix
+                                      [innerText]="(priceTicker$ | async)?.asset"></span>
+                            </mat-form-field>
+                            <!-- <app-validation [fGroup]="form"
+                                            [cName]="'estimate'"></app-validation> -->
+                        </div>
+                    </div>
+
+                </div>
+                <div fxFlex>
+                    <button mat-flat-button
+                            color="primary"
+                            fxFlexFill
+                            fxLayout="row"
+                            type="submit">Buy</button>
+
+                </div>
+            </mat-card-content>
+
+
+            <!-- <mat-card-footer align="end" >
+                <button mat-flat-button
+                        color="primary"
+                        fxFlexFill
+                        fxLayout="row"
+                        type="submit">Buy</button>
+
+            </mat-card-footer> -->
+        </mat-card>
+    </div>
+
+
+
+</form>

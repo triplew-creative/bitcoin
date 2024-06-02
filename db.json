@@ -1,0 +1,12 @@
+{
+    "funds": {
+        "available_aud": 1161.1
+    },
+    "price-ticker": {
+        "BTC": {
+            "all_time_high": 111440,
+            "buy": 102108.5263483321,
+            "sell": 101393.7755629925
+        }
+    }
+}

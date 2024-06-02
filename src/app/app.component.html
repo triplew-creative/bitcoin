@@ -1,20 +1,9 @@
-<mat-sidenav-container>
-    <mat-sidenav #sidenav
-                 role="navigation">
-        <app-sidenav-list (sidenavClose)="sidenav.close()"></app-sidenav-list>
-    </mat-sidenav>
-    <mat-sidenav-content>
-
-        <app-header (sidenavToggle)="sidenav.toggle()"></app-header>
-        <main>
-            <div class="container">
-                <div fxFlex
-                     fxLayout="row">
-                    <router-outlet></router-outlet>
-                </div>
+<main>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <router-outlet></router-outlet>
             </div>
-
-
-        </main>
-    </mat-sidenav-content>
-</mat-sidenav-container>
+        </div>
+    </div>
+</main>
