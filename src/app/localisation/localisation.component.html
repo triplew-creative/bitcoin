@@ -1,0 +1,25 @@
+<form [formGroup]="form">
+    <mat-label for="localeName">Choose your locale</mat-label>
+    <mat-select formControlName="localeName"
+                id="localeName">
+        @for(locale of locales; track locale) {
+        <mat-option [value]="locale"
+                    [innerText]="locale"></mat-option>
+        }
+    </mat-select>
+
+    <mat-tab-group>
+        <mat-tab label="Date &amp; Time">
+            <app-date [locale]="form.get('localeName')?.value"></app-date>
+        </mat-tab>
+        <mat-tab label="Number">
+            <app-number [locale]="form.get('localeName')?.value"></app-number>
+        </mat-tab>
+        <mat-tab label="Percent">
+            <app-percent [locale]="form.get('localeName')?.value"></app-percent>
+        </mat-tab>
+        <mat-tab label="Currency">
+            <app-currency [locale]="form.get('localeName')?.value"></app-currency>
+        </mat-tab>
+    </mat-tab-group>
+</form>

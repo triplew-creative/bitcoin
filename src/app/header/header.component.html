@@ -1,0 +1,30 @@
+<mat-toolbar color="dark">
+    <div fxHide.gt-xs>
+        <button mat-icon-button
+                (click)="onToggleSidenav()">
+            <mat-icon>menu</mat-icon>
+        </button>
+    </div>
+
+    <div fxFlex
+         fxLayout
+         fxLayoutAlign="end"
+         fxHide.xs>
+        <ul fxFlex
+            fxLayout
+            fxFlexFill
+            fxLayoutAlign="center"
+            fxLayoutGap="15px"
+            class="navigation-items">
+            <li>
+                <a routerLink="/">Home</a>
+            </li>
+            <li>
+                <a routerLink="/localisation">Localisation</a>
+            </li>
+            <li>
+                <a routerLink="/account">Account Actions</a>
+            </li>
+        </ul>
+    </div>
+</mat-toolbar>
