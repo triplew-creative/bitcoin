@@ -1,20 +1,36 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { APIURL, isNullOrEmpty } from '../utils/utils';
 import { ISettings } from '../models/settings.model';
 import { IBtcBuy, IBtcPrice, IEstimate, IFunds, IPriceTicker, IPriceTickerApi } from '../models/btc.model';
-import { Observable, map, shareReplay, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, map, shareReplay, switchMap, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
-export class BitcoinService
+export class BitcoinService implements OnDestroy
 {
     private fundsUrl: string = `${APIURL}/funds`;
     private btcPriceTickerUrl: string = `${APIURL}/price-ticker`;
+    //Note haven't implemented up POST requests with mock server
     private estimateUrl: string = `${APIURL}/estimate`;
     private buyUrl: string = `${APIURL}/buy`;
-    // private http = inject(HttpClient);
+
+    private fundsSubscription?: Subscription;
+
+    private fundsSubject: BehaviorSubject<IFunds>;
+    public funds$: Observable<IFunds>;
+    private buySubject: BehaviorSubject<IBtcBuy>;
+    public buy$: Observable<IBtcBuy>;
     constructor(private http: HttpClient)
     {
+        this.fundsSubject = new BehaviorSubject<IFunds>({} as IFunds);
+        this.funds$ = this.fundsSubject.asObservable();
+        this.buySubject = new BehaviorSubject<IBtcBuy>({} as IBtcBuy);
+        this.buy$ = this.buySubject.asObservable();
+    }
+
+    public ngOnDestroy(): void
+    {
+        this.fundsSubscription?.unsubscribe();
     }
 
     public getBtcPrice(): Observable<IPriceTicker>
@@ -24,13 +40,21 @@ export class BitcoinService
             shareReplay()
         );
     }
+
     public getFunds(): Observable<IFunds>
     {
-        return this.http.get<IFunds>(this.fundsUrl).pipe(
+        this.fundsSubscription = this.http.get<IFunds>(this.fundsUrl).pipe(
             map(x => x),
             shareReplay()
-        );;
+        ).subscribe({
+            next: (funds: IFunds) =>
+            {
+                this.fundsSubject.next(funds);
+            }
+        });
+        return this.funds$;
     }
+
     public getEstimate(amount: number, btcToAud: number): IEstimate
     {
         const estimate: IEstimate = {
@@ -40,12 +64,17 @@ export class BitcoinService
         };
         return estimate;
     }
-    public updateFunds(amountAvailable: number): Observable<IBtcBuy>
+
+    public updateFunds(amountAvailable: number): Observable<IFunds>
     {
-        return this.http.post<IBtcBuy>(this.buyUrl, amountAvailable);
+        const funds: IFunds = { available_aud: Number(this.fundsSubject.getValue()?.available_aud) - amountAvailable };
+        this.fundsSubject.next(funds);
+        return this.funds$;
     }
+
     public buy(buyObj: IBtcBuy): Observable<IBtcBuy>
     {
-        return this.http.post<IBtcBuy>(this.buyUrl, buyObj);
+        this.buySubject.next(buyObj);
+        return this.buy$;
     }
 }

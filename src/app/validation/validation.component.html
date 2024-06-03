@@ -13,6 +13,9 @@
         <ng-container *ngIf="fGroup.get(cName)!.hasError('message')">
             {{fGroup.get(cName)!.errors!['message']}}
         </ng-container>
+        <ng-container *ngIf="fGroup.get(cName)!.hasError('amountExceeded')">
+            Balance exceeded
+        </ng-container>
     </div>
 
 </ng-container>

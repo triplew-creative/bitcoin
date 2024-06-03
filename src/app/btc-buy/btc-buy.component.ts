@@ -6,14 +6,14 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { BitcoinService } from '../services/bitcoin.service';
-import { IBtcBuy, IBtcPrice, IEstimate, IFunds, IPriceTicker } from '../models/btc.model';
-import { Observable, Subscription, combineLatest, map, switchMap } from 'rxjs';
+import { IBtcBuy, IEstimate, IFunds, IPriceTicker } from '../models/btc.model';
+import { Observable, Subscription, combineLatest } from 'rxjs';
 import { FlexModule } from '@angular/flex-layout';
 import { amountValidator } from '../validation/amount.validator';
 import { MatCardModule } from '@angular/material/card';
 import { patternWithMessage } from '../validation/pattern-with-message.validator';
 import { ValidationComponent } from '../validation/validation.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'app-btc-buy',
@@ -27,7 +27,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
         MatGridListModule,
         FlexModule,
         MatCardModule,
-        ValidationComponent,
+        ValidationComponent
     ],
     providers: [CurrencyPipe, MatIconRegistry],
     templateUrl: './btc-buy.component.html',
@@ -37,10 +37,11 @@ export class BtcBuyComponent implements OnInit, OnDestroy
 {
     protected priceTicker$: Observable<IPriceTicker>;
     protected availableFunds$: Observable<IFunds>;
-    // protected estimate$: Observable<IEstimate>;
+    protected buy$?: Observable<IBtcBuy>;
     protected form: FormGroup;
     private buyOj: IBtcBuy;
     private amountSubscription?: Subscription;
+    private buySubscription?: Subscription;
     private get amountControl(): FormControl
     {
         return this.form.get('amount') as FormControl;
@@ -51,9 +52,8 @@ export class BtcBuyComponent implements OnInit, OnDestroy
         return this.form.get('estimate') as FormControl;
     }
 
-    constructor(private btcService: BitcoinService, private fb: FormBuilder)
+    constructor(private btcService: BitcoinService, private fb: FormBuilder, private _snackBar: MatSnackBar, private currencyPipe: CurrencyPipe)
     {
-
         this.form = this.fb.group({
             btcPrice: new FormControl<number | null>(null),
             funds: new FormControl<number | null>(null),
@@ -63,9 +63,6 @@ export class BtcBuyComponent implements OnInit, OnDestroy
         this.buyOj = {} as IBtcBuy;
         this.availableFunds$ = this.btcService.getFunds();
         this.priceTicker$ = this.btcService.getBtcPrice();
-
-        // this.estimate$ = this.btcService.getEstimate();
-
     }
     public ngOnInit(): void
     {
@@ -83,7 +80,6 @@ export class BtcBuyComponent implements OnInit, OnDestroy
                 {
                     this.buyOj.asset = priceTicker.asset;
                     const newEstimate: IEstimate = this.btcService.getEstimate(amount, priceTicker.values.buy);
-                    console.log('newest', newEstimate);
                     if (newEstimate)
                     {
                         this.estimateControl.setValue(newEstimate.buy_amount_estimated);
@@ -96,14 +92,15 @@ export class BtcBuyComponent implements OnInit, OnDestroy
             }
         });
     }
+
     public ngOnDestroy(): void
     {
         this.amountSubscription?.unsubscribe();
+        this.buySubscription?.unsubscribe();
     }
 
     protected onSubmit(): void
     {
-        console.log('this.form.valid', this.form.valid);
         if (this.form.valid)
         {
             this.buyOj = {
@@ -111,9 +108,23 @@ export class BtcBuyComponent implements OnInit, OnDestroy
                 price: this.estimateControl?.value,
                 amount: this.amountControl?.value
             };
-            this.btcService.buy(this.buyOj).pipe().subscribe(console.log);
+            this.availableFunds$ = this.btcService.updateFunds(this.amountControl.value);
+            this.buy$ = this.btcService.buy(this.buyOj);
+            this.buySubscription = this.buy$?.subscribe({
+                next: (bought: IBtcBuy) =>
+                {
+                    this._snackBar.open(`Your ${this.currencyPipe.transform(bought.amount)} purchase of ${bought.price} ${bought.asset} has been successful.`, 'close', {
+                        horizontalPosition: 'center',
+                        verticalPosition: 'top'
+                    });
+                    this.amountControl.setValue(null, { emitEvent: false });
+                    this.estimateControl.setValue(null, { emitEvent: false });
+
+                    this.form.markAsPristine();
+                    this.form.markAsUntouched();
+                    this.form.updateValueAndValidity();
+                }
+            });
         }
-
     }
-
 }

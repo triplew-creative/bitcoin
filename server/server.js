@@ -1,9 +1,9 @@
 const jsonServer = require('json-server');
-const server = jsonServer.create();
-const router = jsonServer.router('apps/fake-backend/src/json-server-backend/db.json');
 const middlewares = jsonServer.defaults();
+const server = jsonServer.create();
 server.use(middlewares);
-//server.get('/api/suggestion', (req, res) => res.status(500).jsonp({}));
+server.use(jsonServer.bodyParser);
+
 server.use(jsonServer.rewriter({
     '/api/*': '$1'
 })
@@ -12,20 +12,17 @@ server.use(jsonServer.rewriter({
 server.listen(3000, () => {
     console.log('Fake-Backend Server is running');
 });
-
 server.post('/buy', (req, res) => {
     if (req.method === 'POST') {
         const buyObj = req.body;
+        console.log('buyObj', buyObj);
         if (buyObj) {
             let result = server.defaultConfiguration;
+            console.log('result', result);
 
             if (result) {
                 res.status(200).jsonp(result);
             }
-        } else {
-            res.status(400).jsonp({
-                error: "No valid userId"
-            });
         }
     }
 });
